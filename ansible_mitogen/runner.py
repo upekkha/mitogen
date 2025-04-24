@@ -76,6 +76,9 @@ except ImportError:
 import ansible.module_utils.basic
 ansible.module_utils.basic._ANSIBLE_ARGS = '{}'
 
+# Ugly patch for ansible data tagging https://github.com/ansible/ansible/pull/84621
+ansible.module_utils.basic._ANSIBLE_PROFILE = 'legacy'
+
 # For tasks that modify /etc/resolv.conf, non-Debian derivative glibcs cache
 # resolv.conf at startup and never implicitly reload it. Cope with that via an
 # explicit call to res_init() on each task invocation. BSD-alikes export it

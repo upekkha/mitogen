@@ -402,15 +402,16 @@ class ActionModuleMixin(ansible.plugins.action.ActionBase):
             if not self._mitogen_rediscovered_interpreter:
                 result['ansible_facts'][self._discovered_interpreter_key] = self._discovered_interpreter
 
-        if self._discovery_warnings:
-            if result.get('warnings') is None:
-                result['warnings'] = []
-            result['warnings'].extend(self._discovery_warnings)
+        if ansible_mitogen.utils.ansible_version[:2] < (2, 19):
+            if self._discovery_warnings:
+                if result.get('warnings') is None:
+                    result['warnings'] = []
+                result['warnings'].extend(self._discovery_warnings)
 
-        if self._discovery_deprecation_warnings:
-            if result.get('deprecations') is None:
-                result['deprecations'] = []
-            result['deprecations'].extend(self._discovery_deprecation_warnings)
+            if self._discovery_deprecation_warnings:
+                if result.get('deprecations') is None:
+                    result['deprecations'] = []
+                result['deprecations'].extend(self._discovery_deprecation_warnings)
 
         return ansible.utils.unsafe_proxy.wrap_var(result)
 
@@ -429,7 +430,11 @@ class ActionModuleMixin(ansible.plugins.action.ActionBase):
                     "stderr": "stderr data"
                 }
         """
-        data = self._parse_returned_data(result)
+        if ansible_mitogen.utils.ansible_version[:2] >= (2, 19):
+            # Pass legacy serialization profile to Ansible 2.19+
+            data = self._parse_returned_data(result, 'legacy')
+        else:
+            data = self._parse_returned_data(result)
 
         # Cutpasted from the base implementation.
         if 'stdout' in data and 'stdout_lines' not in data:
